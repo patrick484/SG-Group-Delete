@@ -1,157 +1,79 @@
 import boto3
 import json
-import csv
 from botocore.exceptions import ClientError
 
-# --- CONFIGURATION ---
-# <<< CHANGE >>> Set an initial region for the first API call (bypasses NoRegionError)
-INITIAL_REGION = 'us-east-1' 
+INITIAL_REGION = "us-east-1"
+DRY_RUN_MODE = False  # Set to False to perform actual deletion
 
-# <<< CHANGE >>> SAFETY TOGGLE: 
-# Set to True to ONLY test the deletion without actually deleting.
-# Set to False to perform the actual deletion.
-DRY_RUN_MODE = False
-# ---------------------
-
-def find_unused_security_groups():
-
-    # Initialize EC2 client with an initial region to list all regions
-    # <<< CHANGE >>> Added region_name=INITIAL_REGION to fix NoRegionError
-    ec2_client = boto3.client("ec2", region_name=INITIAL_REGION)
-
-
+def get_all_enabled_regions():
+    """Fetches a list of all enabled AWS regions."""
     try:
-        # Get all enabled regions for the account
-        response = ec2_client.describe_regions(AllRegions=False)
-        all_regions = [region["RegionName"] for region in response["Regions"]]
+        ec2_client = boto3.client("ec2", region_name=INITIAL_REGION)
+        return [r["RegionName"] for r in ec2_client.describe_regions(AllRegions=False)["Regions"]]
     except ClientError as e:
-        print(
-            f"❌ Error describing regions. Check your credentials and permissions: {e}"
-        )
+        # Fails silently and returns None if credentials/permissions are invalid
+        return None
+
+def analyze_and_process_security_groups(region, dry_run_mode):
+
+    region_client = boto3.client("ec2", region_name=region)
+    
+    
+    try:
+        # 1. Get ALL SG IDs and details
+        sg_response = region_client.describe_security_groups()
+        all_sg_details = [(sg["GroupId"], sg["GroupName"], sg["VpcId"]) 
+                          for sg in sg_response.get("SecurityGroups", [])]
+
+        # 2. Get USED SG IDs (from ENIs)
+        eni_response = region_client.describe_network_interfaces()
+        used_sg_ids = {group["GroupId"] 
+                       for eni in eni_response.get("NetworkInterfaces", []) 
+                       for group in eni.get("Groups", [])}
+        
+        # 3. Process and Delete
+        for sg_id, sg_name, vpc_id in all_sg_details:
+            # Check for unused and skip default SG
+            if sg_id not in used_sg_ids and sg_name != "default":
+                
+                try:
+                    # Attempt the deletion (or Dry Run)
+                    region_client.delete_security_group(GroupId=sg_id, DryRun=dry_run_mode)
+
+                    action = "SIMULATED DELETED" if dry_run_mode else "**DELETED**"
+                    
+                    # Single-line successful output
+                    print(f"✅ {region}: {sg_id} ({sg_name}) {action}.")
+
+                except ClientError as delete_e:
+                    error_code = delete_e.response["Error"]["Code"]
+                    
+                    # Single-line failure output
+                    print(f"❌ {region}: {sg_id} ({sg_name}) FAILED. Reason: {error_code}.")
+
+    except ClientError as e:
+        error_str = str(e)
+        if "AccessDenied" in error_str or "is not enabled for this account" in error_str:
+            print(f"⚠️ {region}: Skipping due to Access Denied or Region Not Enabled.")
+        else:
+            print(f"❌ {region}: Unexpected error: {e}")
+
+
+def main():
+    """Main function to orchestrate the security group cleanup workflow."""
+    
+    all_regions = get_all_enabled_regions()
+    if not all_regions:
         return
 
-    unused_sg_report = []
-    # <<< CHANGE >>> List to track SGs that failed deletion (e.g., due to being referenced)
-    failed_to_delete = [] 
+    # Removed the initial print statements as requested
 
-    print(
-        f"Starting audit for unused security groups across {len(all_regions)} regions..."
-    )
-    # <<< CHANGE >>> Print Dry Run status clearly
-    print(f"*** DRY RUN MODE IS {'ON' if DRY_RUN_MODE else 'OFF'} ***")
-    print("-" * 50)
-
-    # 1. Iterate through each region
+    # Iterate and process each region
     for region in all_regions:
-        print(f"\n  🔍 Region: {region}")
-        try:
-            region_client = boto3.client("ec2", region_name=region)
+        # Removed the per-region print statement
+        analyze_and_process_security_groups(region, DRY_RUN_MODE)
 
-            # --- Get ALL Security Group IDs ---
-            sg_response = region_client.describe_security_groups()
-            all_sg_ids = set()
-            for sg in sg_response.get("SecurityGroups", []):
-                all_sg_ids.add((sg["GroupId"], sg["GroupName"], sg["VpcId"]))
-
-            # --- Get USED Security Group IDs (referenced by ENIs) ---
-            eni_response = region_client.describe_network_interfaces()
-            used_sg_ids = set()
-
-            for eni in eni_response.get("NetworkInterfaces", []):
-                for group in eni.get("Groups", []):
-                    used_sg_ids.add(group["GroupId"])
-
-            # --- Determine Unused Security Groups & Attempt Deletion ---
-            current_region_processed_count = 0
-
-            for sg_id, sg_name, vpc_id in all_sg_ids:
-                if sg_id not in used_sg_ids:
-                    
-                    # Filter out the default SG (sg-xxxx) which often appears unused but cannot be deleted
-                    if sg_name != "default":
-                        
-                        try:
-                            # <<< CHANGE >>> Attempt the deletion (or Dry Run)
-                            response = region_client.delete_security_group(
-                                GroupId=sg_id,
-                                DryRun=DRY_RUN_MODE 
-                            )
-
-                            action = "SIMULATED DELETION" if DRY_RUN_MODE else "DELETED"
-                            print(f"    ✅ {action}: {sg_id} ({sg_name})")
-                            
-                            status = "DRY_RUN_SUCCESS (Ready for deletion)" if DRY_RUN_MODE else "DELETED"
-
-                            # Append successful action to the report
-                            unused_sg_report.append(
-                                {
-                                    "Region": region,
-                                    "SecurityGroupId": sg_id,
-                                    "SecurityGroupName": sg_name,
-                                    "VpcId": vpc_id,
-                                    "Status": status,
-                                }
-                            )
-                            current_region_processed_count += 1
-                            
-
-                        except ClientError as delete_e:
-                            # Handle specific deletion failure errors (e.g., referenced by another SG)
-                            error_code = delete_e.response['Error']['Code']
-                            error_msg = delete_e.response['Error']['Message']
-                            
-                            print(f"    ❌ FAILED: {sg_id} Reason: {error_code}")
-                            
-                            # Add the failed SG to the dedicated failure report list
-                            failed_to_delete.append({
-                                "Region": region,
-                                "SecurityGroupId": sg_id,
-                                "SecurityGroupName": sg_name,
-                                "VpcId": vpc_id,
-                                "Status": f"FAILED: {error_code}",
-                                "Reason": error_msg
-                            })
-                            
-                            # Also include the failure in the main report
-                            unused_sg_report.append(
-                                {
-                                    "Region": region,
-                                    "SecurityGroupId": sg_id,
-                                    "SecurityGroupName": sg_name,
-                                    "VpcId": vpc_id,
-                                    "Status": f"FAILED: {error_code}",
-                                }
-                            )
-                            current_region_processed_count += 1 # Count it as processed but failed
-
-
-            print(f"  Summary: {current_region_processed_count} SGs {'processed' if DRY_RUN_MODE else 'deleted'} in {region}.")
-
-        except ClientError as e:
-            if "AccessDenied" in str(e) or "is not enabled for this account" in str(e):
-                print(f"  ⚠️ Skipping {region}: Access Denied or Region Not Enabled.")
-            else:
-                print(f"  ❌ An unexpected error occurred in {region}: {e}")
-
-    # 2. Compile and display the final report
-    if unused_sg_report:
-        print("\n" + "="*80)
-        print("✨ FINAL RUN REPORT ✨")
-        print(f"*** DRY RUN MODE WAS {'ON' if DRY_RUN_MODE else 'OFF'} ***")
-        print("="*80)
-        
-        print("\n\n--- MAIN RESULTS (JSON Output) ---")
-        # Output all processed SGs, including those that failed
-        print(json.dumps(unused_sg_report, indent=4))
-        
-        if failed_to_delete:
-            print("\n\n--- FAILED DELETIONS SUMMARY ---")
-            print("These groups are typically referenced by other SGs, ENIs not found by describe-network-interfaces, or resources in a pending state.")
-            print(json.dumps(failed_to_delete, indent=4))
-        
-    else:
-        print("\n🎉 No unused security groups found across all checked regions.")
-
+    # Removed the final summary report printing as requested
 
 if __name__ == "__main__":
-    find_unused_security_groups()
+    main()
