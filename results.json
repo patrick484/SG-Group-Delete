@@ -1,0 +1,142 @@
+[
+    {
+        "Region": "ap-south-1",
+        "SecurityGroupId": "sg-004fa8a803df1812e",
+        "SecurityGroupName": "lab-sg",
+        "VpcId": "vpc-07f51c38fbb579cb6",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "ap-south-1",
+        "SecurityGroupId": "sg-05ccba4ad72fc57ee",
+        "SecurityGroupName": "TempDeleteThisWhenYouSee",
+        "VpcId": "vpc-096a80ca71bc71205",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "ap-south-1",
+        "SecurityGroupId": "sg-0460c396328f82a0d",
+        "SecurityGroupName": "launch-wizard-10",
+        "VpcId": "vpc-096a80ca71bc71205",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "ap-south-1",
+        "SecurityGroupId": "sg-092d93e0bbceae412",
+        "SecurityGroupName": "eksctl-cwp-testing-dhanush-cluster-ControlPlaneSecurityGroup-JobRwkhgjrda",
+        "VpcId": "vpc-03e0358340567f7d7",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "ap-south-1",
+        "SecurityGroupId": "sg-093d486ed4da44ea5",
+        "SecurityGroupName": "eks-cluster-sg-cwp-testing-dhanush-1554258901",
+        "VpcId": "vpc-03e0358340567f7d7",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "ap-south-1",
+        "SecurityGroupId": "sg-01dabb269fae1bdb0",
+        "SecurityGroupName": "launch-wizard-2",
+        "VpcId": "vpc-096a80ca71bc71205",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "ap-south-1",
+        "SecurityGroupId": "sg-00a1b0ac33235adda",
+        "SecurityGroupName": "Allow-SSH-Office-IPs",
+        "VpcId": "vpc-096a80ca71bc71205",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "ap-south-1",
+        "SecurityGroupId": "sg-0c8f687891682aaa1",
+        "SecurityGroupName": "Amagi Internal",
+        "VpcId": "vpc-096a80ca71bc71205",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "ap-south-1",
+        "SecurityGroupId": "sg-00b95777ebdd1b4ce",
+        "SecurityGroupName": "eksctl-cwp-testing-dhanush-cluster-ClusterSharedNodeSecurityGroup-QIxrnfpuEL3P",
+        "VpcId": "vpc-03e0358340567f7d7",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "eu-north-1",
+        "SecurityGroupId": "sg-0e69352b8c51b9b59",
+        "SecurityGroupName": "launch-wizard-1",
+        "VpcId": "vpc-0b9eaf699e83cbb0c",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "us-east-1",
+        "SecurityGroupId": "sg-00bb31fcfd7325286",
+        "SecurityGroupName": "eksctl-swp-testing-cluster-ControlPlaneSecurityGroup-Rmuh8jldbM7y",
+        "VpcId": "vpc-099f601b6e3c36253",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "us-east-1",
+        "SecurityGroupId": "sg-00ac75c519f24210e",
+        "SecurityGroupName": "soar-test",
+        "VpcId": "vpc-0a07e8ba126be1642",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "us-east-1",
+        "SecurityGroupId": "sg-01321fa891c5dc933",
+        "SecurityGroupName": "eks-cluster-sg-swp-testing-1016891343",
+        "VpcId": "vpc-099f601b6e3c36253",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "us-east-1",
+        "SecurityGroupId": "sg-054cae3b61e109480",
+        "SecurityGroupName": "Registry proxy consumer",
+        "VpcId": "vpc-099f601b6e3c36253",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "us-east-1",
+        "SecurityGroupId": "sg-04914573897f44889",
+        "SecurityGroupName": "launch-wizard-3",
+        "VpcId": "vpc-0a07e8ba126be1642",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "us-east-1",
+        "SecurityGroupId": "sg-013372a4123d0918c",
+        "SecurityGroupName": "testPantherCSPM",
+        "VpcId": "vpc-0a07e8ba126be1642",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "us-east-1",
+        "SecurityGroupId": "sg-07e8ccf31d0a3057d",
+        "SecurityGroupName": "eksctl-extravagant-painting-1750140928-cluster-ClusterSharedNodeSecurityGroup-pABCdsAbK3q3",
+        "VpcId": "vpc-06a363248aef91763",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "us-east-1",
+        "SecurityGroupId": "sg-090be8fb85b37579f",
+        "SecurityGroupName": "eks-cluster-sg-extravagant-painting-1750140928-561379222",
+        "VpcId": "vpc-06a363248aef91763",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "us-east-1",
+        "SecurityGroupId": "sg-09e156847e59d1ce9",
+        "SecurityGroupName": "foundry-testing",
+        "VpcId": "vpc-0a07e8ba126be1642",
+        "Status": "UNUSED (No ENI Attachment)"
+    },
+    {
+        "Region": "us-east-1",
+        "SecurityGroupId": "sg-0e353a26046baeda6",
+        "SecurityGroupName": "eksctl-extravagant-painting-1750140928-cluster-ControlPlaneSecurityGroup-wxvxP3bvvTVH",
+        "VpcId": "vpc-06a363248aef91763",
+        "Status": "UNUSED (No ENI Attachment)"
+    }
+]
