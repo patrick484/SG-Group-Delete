@@ -9,15 +9,21 @@ class SgHelper:
 
     def list_all_security_groups(self) -> list[str]:
         sg_ids = []
-        paginator = self.ec2_client.get_paginator("describe_security_groups")
-        response_iterator = paginator.paginate()
-        for response in response_iterator:
-            for each_sg in response["SecurityGroups"]:
-                sg_id = each_sg["GroupId"]
-                sg_name: str = each_sg["GroupName"]
-                if sg_name == "default":
-                    continue
-                sg_ids.append(sg_id)
+        try:
+            paginator = self.ec2_client.get_paginator("describe_security_groups")
+            response_iterator = paginator.paginate()
+            for response in response_iterator:
+                for each_sg in response["SecurityGroups"]:
+                    sg_id = each_sg["GroupId"]
+                    sg_name: str = each_sg["GroupName"]
+                    if sg_name == "default":
+                        continue
+                    sg_ids.append(sg_id)
+        except Exception as e:
+            print(
+                f"error occurred while listing all security groups, region: {self.region}"
+            )
+            print(str(e))
         return sg_ids
 
     def filter_used_sgs(self, total_sg_groups: list[str]) -> list[str]:
@@ -30,13 +36,19 @@ class SgHelper:
 
     def __get_all_attached_sgs(self) -> set[str]:
         output: set[str] = set()
-        paginator = self.ec2_client.get_paginator("describe_network_interfaces")
-        response_iterator = paginator.paginate()
-        for response in response_iterator:
-            for each_network_interfaces in response["NetworkInterfaces"]:
-                for all_attached_groups in each_network_interfaces["Groups"]:
-                    group_id = all_attached_groups["GroupId"]
-                    output.add(group_id)
+        try:
+            paginator = self.ec2_client.get_paginator("describe_network_interfaces")
+            response_iterator = paginator.paginate()
+            for response in response_iterator:
+                for each_network_interfaces in response["NetworkInterfaces"]:
+                    for all_attached_groups in each_network_interfaces["Groups"]:
+                        group_id = all_attached_groups["GroupId"]
+                        output.add(group_id)
+        except Exception as e:
+            print(
+                f"error occurred while listing all attached security groups, region: {self.region}"
+            )
+            print(str(e))
         return output
 
     def delete_sg(self, sg_id: str) -> bool:
@@ -59,5 +71,5 @@ class SgHelper:
             print(
                 f"error occurred while trying delete sg {sg_id}, region: {self.region}"
             )
-            raise e
+            print(str(e))
         return True
